@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Scratch Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        #scratchCardContainer {
+            text-align: center;
+        }
+        #description {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        #scratchCard {
+            width: 300px;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+        #scratchCard canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #message {
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            text-align: center;
+            color: #333;
+            z-index: -1;
+        }
+        .winner {
+            color: green;
+        }
+        .loser {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div id="scratchCardContainer">
+    <div id="description">
+        Feeling the stress? Scratch away your worries! You could win a calming anti-stress gift box filled with relaxation essentials. 
+        Take a moment for yourself—scratch to reveal!
+    </div>
+    <div id="scratchCard">
+        <canvas id="scratchCanvas" width="300" height="200"></canvas>
+        <div id="message"></div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const messageDiv = document.getElementById('message');
+
+    // Draw a scratchable silver image overlay
+    const img = new Image();
+    img.src = 'https://via.placeholder.com/300x200.png?text=Scratch+Here';  // Placeholder image
+    img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+    };
+
+    let isScratching = false;
+    let totalWinners = 0;
+    const maxWinners = 8;  // Total number of winners allowed
+    let hasScratched = false;
+
+    // Generate random result based on current number of winners
+    function getResult() {
+        if (totalWinners < maxWinners && Math.random() < 0.3) {
+            totalWinners++;
+            return 'You win an anti-stress gift box!';
+        } else {
+            return 'Better luck next time!';
+        }
+    }
+
+    let result = getResult();
+    messageDiv.textContent = result;
+    messageDiv.classList.add(result.includes('win') ? 'winner' : 'loser');
+
+    // Scratch functionality
+    function scratch(e) {
+        if (!isScratching) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Clear small rectangles to simulate scratching
+        ctx.clearRect(x, y, 30, 30);
+        hasScratched = true;  // Ensure some part is scratched
+    }
+
+    // Event listeners for scratching behavior
+    canvas.addEventListener('mousedown', () => isScratching = true);
+    canvas.addEventListener('mouseup', () => {
+        isScratching = false;
+        if (hasScratched) {
+            messageDiv.style.zIndex = 1;  // Bring the result message to the front
+            canvas.style.display = 'none';  // Hide the scratch surface
+
+            // If the user wins, redirect them to the Google Form
+            if (result.includes('win')) {
+                alert('You’ve won! Please enter your details to claim your prize.');
+                window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLSdrI88SrFIR507NhuFRvEu1w0yrrEIqXipx5nrDlFzDPkGxLw/viewform?usp=sf_link';
+            }
+        }
+    });
+    canvas.addEventListener('mousemove', scratch);
+
+</script>
+
+</body>
+</html>
